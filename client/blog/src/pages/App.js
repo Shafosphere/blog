@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import Main from "./main";
-
+import Logging from "./Logging/main-log";
 
 function App() {
-  const [data, setData] = useState('');
-
-  useEffect(() => {
-    axios.get('http://localhost:8080/api/data')
-      .then(response => {
-        setData(response.data.message);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  }, []);
-
+  const [user, setUser] = useState(null);
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
   return (
     <div className="App">
-      {/* <h1>React and Node.js Integration</h1>
-      <p>Message from the server: {data}</p> */}
-      <Main/>
+      {user ? (
+        // Jeśli użytkownik jest zalogowany, pokaż główną treść
+        <Main />
+      ) : (
+        // Jeśli nie jest zalogowany, pokaż formularz logowania
+        <Logging onLogin={handleLogin} />
+      )}
     </div>
   );
 }
