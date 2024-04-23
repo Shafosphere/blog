@@ -29,9 +29,9 @@ app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (users[username] && users[username] === password) {
       req.session.user = username;
-      res.status(200).send('Zalogowano pomyślnie');
+      res.status(200).send('successful login');
     } else {
-      res.status(401).send('Nieprawidłowa nazwa użytkownika lub hasło');
+      res.status(401).send('Invalid username or password');
     }
 });
 

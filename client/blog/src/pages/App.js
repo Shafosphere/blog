@@ -10,10 +10,8 @@ function App() {
   return (
     <div className="App">
       {user ? (
-        // Jeśli użytkownik jest zalogowany, pokaż główną treść
-        <Main />
+        <Main username={user}/>
       ) : (
-        // Jeśli nie jest zalogowany, pokaż formularz logowania
         <Logging onLogin={handleLogin} />
       )}
     </div>
