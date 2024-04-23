@@ -1,0 +1,22 @@
+.window-smallCard{
+    width: 20rem;
+    display: flex;
+    flex-direction: column;
+}
+.top-smallCard{
+    height: 40%;
+    width: 100%;
+}
+.top-smallCard img{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+.bot-smallCard{
+    height: 60%;
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
