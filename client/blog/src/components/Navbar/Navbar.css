@@ -1,0 +1,39 @@
+
+.container-navbar{
+    height: 7rem;
+    width: 100%;
+    position: fixed;
+}
+.window-navbar{
+    background-color: #123C49;
+    height: 6rem;
+    width: 100%;
+    color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+.title-navbar{
+    font-size: 40px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-left: 3rem;
+    cursor: pointer;
+    transition: color 0.5s ease;
+    letter-spacing: 3px;
+} 
+.title-navbar:hover{
+    color: rgba(255, 196, 0, 1);
+} 
+.add-navbar{
+    font-size: 70px;
+    font-weight: 700;
+    margin-right: 3rem;
+    cursor: pointer;
+    transition: transform 0.5s ease;
+}
+.add-navbar:hover{
+    transform: rotate(45deg);
+}

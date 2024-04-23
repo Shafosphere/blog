@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Main from "./main";
+
 
 function App() {
   const [data, setData] = useState('');
@@ -16,8 +18,9 @@ function App() {
 
   return (
     <div className="App">
-      <h1>React and Node.js Integration</h1>
-      <p>Message from the server: {data}</p>
+      {/* <h1>React and Node.js Integration</h1>
+      <p>Message from the server: {data}</p> */}
+      <Main/>
     </div>
   );
 }
