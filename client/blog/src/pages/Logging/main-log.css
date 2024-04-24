@@ -7,8 +7,8 @@
     margin: auto;
 }
 .window-logg{
-    padding: 5rem;
-    height: 30rem;
+    padding: 5rem 5rem 0rem 5rem;
+    height: 40rem;
     width: 30rem;
     background-color: white;
 }
