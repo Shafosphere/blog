@@ -22,6 +22,7 @@ export default function LoginForm({ onLogin }) {
   return (
     <div className="container-LoginForm">
       <form onSubmit={handleSubmit}>
+        <div className="title-logg">Logging in</div>
         <div className="container-input">
           <div className="custom_input">
             <input

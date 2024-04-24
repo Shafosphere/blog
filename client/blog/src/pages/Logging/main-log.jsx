@@ -1,5 +1,6 @@
 import "./main-log.css";
 import LoginForm from "../../components/Logging/Login/LoginForm";
+import RegiForm from "../../components/Logging/Registration/regiForm";
 import { useState } from "react";
 export default function Logging({ onLogin }) {
   const [display, setDisplay] = useState("login");
@@ -12,7 +13,7 @@ export default function Logging({ onLogin }) {
               <LoginForm onLogin={onLogin} />
             </div>
             <div className="bot-logg">
-              <button className="button" type="submit">
+              <button onClick={()=>setDisplay("register")} className="button" type="submit">
                 register
               </button>
               <button className="button" type="submit">
@@ -24,11 +25,11 @@ export default function Logging({ onLogin }) {
         {display === "register" && (
           <>
             <div className="top-logg">
-              <LoginForm onLogin={onLogin} />
+              <RegiForm onLogin={onLogin} />
             </div>
             <div className="bot-logg">
-              <button className="button" type="submit">
-                register
+              <button onClick={()=>setDisplay("login")} className="button" type="submit">
+                log in
               </button>
               <button className="button" type="submit">
                 reset
