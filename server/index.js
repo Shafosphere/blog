@@ -7,13 +7,26 @@ import pg from "pg";
 import bcrypt, { hash } from "bcrypt";
 import passport from "passport";
 import { Strategy } from "passport-local";
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const port = 8080;
 const saltRounds = 10;
 
+app.use(
+  session({
+    secret: "secretkey",
+    resave: false,
+    saveUninitialized: true,
+    cookie:{
+      maxAge: 1000 * 60 * 60 * 24,
+    }
+  })
+);
+
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use(express.json()); // Dodaj to przed twoimi trasami (routes)
+
 
 const db = new pg.Client({
   user: "postgres",
@@ -24,13 +37,7 @@ const db = new pg.Client({
 });
 db.connect();
 
-app.use(
-  session({
-    secret: "secretkey",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -42,23 +49,37 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.get("/is-authenticated", async (req, res) => {
-  if (req.isAuthenticated()) {
-    console.log("Authenticated");
-    res.json({ authenticated: true, user: req.user }); // Send user data if needed
-  } else {
-    console.log("NotAuthenticated");
-    res.json({ authenticated: false });
-  }
+
+app.get("/is-authenticated", (req, res) => {
+  res.json({ authenticated: req.isAuthenticated() });
 });
 
-app.post(
-  "/log",
-  passport.authenticate("local", {
-    successRedirect: "/main",
-    failureRedirect: "/login",
-  })
-);
+app.post("/login", (req, res, next) => {
+  console.log("login");
+  console.log(req.body);
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      console.log("11");
+      return next(err);
+    }
+    if (!user) {
+      console.log("22");
+      return res.status(400).send('Bad Request');
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        console.log("33");
+        return next(err);
+      }
+      console.log(user);
+      const tokendata = { id: user.id, username: user.username, email: user.email};
+      const secret = 'secret_key';
+      const token = jwt.sign(tokendata, secret, { expiresIn: '1h' });
+      console.log("44");
+      return res.json({ success: true, message: "Loggin success.", token });
+    });
+  })(req, res, next);
+});
 
 app.post(
   "/register",
@@ -111,6 +132,7 @@ app.post(
 
 passport.use(
   new Strategy(async function verify(username, password, cb) {
+    console.log('Verifying user:', username);
     try {
       const result = await db.query("SELECT * FROM users WHERE username = $1", [
         username,
@@ -121,11 +143,14 @@ passport.use(
 
         bcrypt.compare(password, storedHash, (err, result) => {
           if (err) {
+            console.log("1");
             return cb("Error comparing passwords: ", err);
           } else {
             if (result) {
+              console.log("2");
               return cb(null, user);
             } else {
+              console.log("3");
               return cb(null, false);
             }
           }
