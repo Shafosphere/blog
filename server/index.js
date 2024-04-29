@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: './.env.local' });
 import express from "express";
 import bodyParser from "body-parser";
 import { body, validationResult } from "express-validator";
@@ -7,37 +9,38 @@ import pg from "pg";
 import bcrypt, { hash } from "bcrypt";
 import passport from "passport";
 import { Strategy } from "passport-local";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const port = 8080;
 const saltRounds = 10;
+const DATABASE = process.env.REACT_APP_DATABASE;
+const SESSION_KEY = process.env.REACT_APP_SESSION_KEY;
+const TOKEN_KEY = process.env.REACT_APP_TOKEN_KEY;
 
 app.use(
   session({
-    secret: "secretkey",
+    secret: SESSION_KEY,
     resave: false,
     saveUninitialized: true,
-    cookie:{
+    cookie: {
       maxAge: 1000 * 60 * 60 * 24,
-    }
+    },
   })
 );
-
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json()); // Dodaj to przed twoimi trasami (routes)
-
+app.use(express.json());
 
 const db = new pg.Client({
   user: "postgres",
   host: "localhost",
   database: "blog",
-  password: "",
+  password: DATABASE,
   port: 5433,
 });
 db.connect();
-
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -49,34 +52,57 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-
 app.get("/is-authenticated", (req, res) => {
-  res.json({ authenticated: req.isAuthenticated() });
+  const token = req.cookies.token;
+  if (!token) {
+    return res.json({ authenticated: false });
+  }
+  jwt.verify(token, TOKEN_KEY, (err, decoded) => {
+    if (err) {
+      return res.json({ authenticated: false });
+    }
+    const userId = decoded.id;
+    const userNick = decoded.username;
+    const userEmail = decoded.email;
+    db.query(
+      "SELECT * FROM users WHERE id = $1 AND username = $2 AND email = $3",
+      [userId, userNick, userEmail],
+      (err, result) => {
+        if (err || result.rows.length === 0) {
+          return res.json({ authenticated: false });
+        }
+        return res.json({ authenticated: true, user: decoded });
+      }
+    );
+  });
 });
 
+
 app.post("/login", (req, res, next) => {
-  console.log("login");
-  console.log(req.body);
   passport.authenticate("local", (err, user, info) => {
     if (err) {
-      console.log("11");
       return next(err);
     }
     if (!user) {
-      console.log("22");
-      return res.status(400).send('Bad Request');
+      return res.status(400).send("Bad Request");
     }
     req.logIn(user, (err) => {
       if (err) {
-        console.log("33");
         return next(err);
       }
-      console.log(user);
-      const tokendata = { id: user.id, username: user.username, email: user.email};
-      const secret = 'secret_key';
-      const token = jwt.sign(tokendata, secret, { expiresIn: '1h' });
-      console.log("44");
-      return res.json({ success: true, message: "Loggin success.", token });
+      const tokendata = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      };
+      const secret = TOKEN_KEY;
+      const token = jwt.sign(tokendata, secret, { expiresIn: "1h" });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 3600000,
+      });
+      return res.json({ success: true, message: "Loggin success." });
     });
   })(req, res, next);
 });
@@ -132,7 +158,6 @@ app.post(
 
 passport.use(
   new Strategy(async function verify(username, password, cb) {
-    console.log('Verifying user:', username);
     try {
       const result = await db.query("SELECT * FROM users WHERE username = $1", [
         username,
@@ -143,14 +168,11 @@ passport.use(
 
         bcrypt.compare(password, storedHash, (err, result) => {
           if (err) {
-            console.log("1");
             return cb("Error comparing passwords: ", err);
           } else {
             if (result) {
-              console.log("2");
               return cb(null, user);
             } else {
-              console.log("3");
               return cb(null, false);
             }
           }
