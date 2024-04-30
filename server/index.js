@@ -71,12 +71,20 @@ app.get("/is-authenticated", (req, res) => {
         if (err || result.rows.length === 0) {
           return res.json({ authenticated: false });
         }
-        return res.json({ authenticated: true, user: decoded });
+        return res.json({ authenticated: true, user: userNick });
       }
     );
   });
 });
 
+app.get('/logout', (req, res) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.clearCookie('connect.sid');
+    res.clearCookie('token');
+    res.json({ success: true, message: 'Wylogowano pomyślnie.' });
+  });
+});
 
 app.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
@@ -112,7 +120,7 @@ app.post(
   [
     body("username").trim().isLength({ min: 3 }),
     body("email").isEmail(),
-    body("password").isLength({ min: 6 }),
+    body("password").isLength({ min: 3 }),
     body("confirmPass").custom((value, { req }) => value === req.body.password),
   ],
   (req, res, next) => {
@@ -138,7 +146,8 @@ app.post(
       } else {
         bcrypt.hash(password, saltRounds, async (err, hash) => {
           if (err) {
-            console.log("Error hasing password:", err);
+            console.log("Error hashing password:", err);
+    return res.status(500).send("Error during registration");
           } else {
             await db.query(
               "INSERT INTO users (username, email, password) VALUES ($1, $2 , $3)",

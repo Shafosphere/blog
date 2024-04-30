@@ -2,7 +2,7 @@ import "./main-log.css";
 import LoginForm from "../../components/Logging/Login/LoginForm";
 import RegiForm from "../../components/Logging/Registration/regiForm";
 import { useState } from "react";
-export default function Logging({ onLogin }) {
+export default function Logging({ setIsAuthenticated, checkAuthentication }) {
   const [display, setDisplay] = useState("login");
   return (
     <div className="container-logging">
@@ -10,7 +10,7 @@ export default function Logging({ onLogin }) {
         {display === "login" && (
           <>
             <div className="top-logg">
-              <LoginForm onLogin={onLogin} />
+              <LoginForm setIsAuthenticated={setIsAuthenticated}checkAuthentication={checkAuthentication}/>
             </div>
             <div className="bot-logg">
               <button onClick={()=>setDisplay("register")} className="button" type="submit">
@@ -25,7 +25,7 @@ export default function Logging({ onLogin }) {
         {display === "register" && (
           <>
             <div className="top-logg">
-              <RegiForm onLogin={onLogin} />
+              <RegiForm setIsAuthenticated={setIsAuthenticated}/>
             </div>
             <div className="bot-logg">
               <button onClick={()=>setDisplay("login")} className="button" type="submit">

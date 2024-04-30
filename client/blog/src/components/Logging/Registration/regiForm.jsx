@@ -1,12 +1,14 @@
 import "./regiForm.css";
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function RegiForm({ onLogin }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPass, setConfirm] = useState("");
+  const navigate = useNavigate();
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -15,15 +17,20 @@ export default function RegiForm({ onLogin }) {
       return;
     }
     try {
-      await axios.post("http://localhost:8080/register", {
+      const response = await axios.post("http://localhost:8080/register", {
         username,
         email,
         password,
         confirmPass,
       });
-      onLogin(username);
+      if (response.data.success) {
+        navigate("/login");
+      } else {
+        alert(response.data.message);
+      }
     } catch (error) {
-      console.error("Loggin error", error);
+      console.error("Registration error", error);
+      alert("An error occurred during registration");
     }
   }
 
