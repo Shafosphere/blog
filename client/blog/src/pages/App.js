@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Main from "./Home/main";
+import Main from "./main";
 import "./index.css";
 import Logging from "./Logging/main-log";
 import ErrorPage from "../error-page";

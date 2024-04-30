@@ -3,10 +3,11 @@ import "./Navbar.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export default function Navbar() {
+export default function Navbar({changeDisplay}) {
   const [isLoggedIn, setLogged] = useState(false);
   const [nickname, setNickname] = useState();
   const navigate = useNavigate();
+
 
   useEffect(() => {
     console.log("sprawdzam");
@@ -53,7 +54,7 @@ export default function Navbar() {
         <div className="logout">
           <span onClick={()=>logout()} className="underline">Logout</span>
         </div>
-        <div className="add-navbar">+</div>
+        <div onClick={()=>changeDisplay()} className="add-navbar">+</div>
         </div>
       </div>
     </div>
