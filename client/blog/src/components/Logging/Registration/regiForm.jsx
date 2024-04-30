@@ -1,14 +1,13 @@
 import "./regiForm.css";
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-export default function RegiForm({ onLogin }) {
+export default function RegiForm({setDisplay}) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPass, setConfirm] = useState("");
-  const navigate = useNavigate();
+
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -24,7 +23,7 @@ export default function RegiForm({ onLogin }) {
         confirmPass,
       });
       if (response.data.success) {
-        navigate("/login");
+        setDisplay('login')
       } else {
         alert(response.data.message);
       }

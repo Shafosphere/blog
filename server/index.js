@@ -78,7 +78,7 @@ app.get("/is-authenticated", (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  req.logout(function(err) {
+  req.logout(function (err) {
     if (err) { return next(err); }
     res.clearCookie('connect.sid');
     res.clearCookie('token');
@@ -147,14 +147,13 @@ app.post(
         bcrypt.hash(password, saltRounds, async (err, hash) => {
           if (err) {
             console.log("Error hashing password:", err);
-    return res.status(500).send("Error during registration");
+            return res.status(500).send("Error during registration");
           } else {
             await db.query(
               "INSERT INTO users (username, email, password) VALUES ($1, $2 , $3)",
               [username, email, hash]
             );
-            req.session.user = username;
-            res.status(200).send("successful register");
+            return res.json({ success: true, message: "Loggin success." });
           }
         });
       }

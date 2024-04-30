@@ -25,7 +25,7 @@ export default function Logging({ setIsAuthenticated, checkAuthentication }) {
         {display === "register" && (
           <>
             <div className="top-logg">
-              <RegiForm setIsAuthenticated={setIsAuthenticated}/>
+              <RegiForm setDisplay={setDisplay}/>
             </div>
             <div className="bot-logg">
               <button onClick={()=>setDisplay("login")} className="button" type="submit">
