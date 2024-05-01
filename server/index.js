@@ -164,6 +164,35 @@ app.post(
   }
 );
 
+app.post("/article", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.status(400).send("Bad Request");
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      const tokendata = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      };
+      const secret = TOKEN_KEY;
+      const token = jwt.sign(tokendata, secret, { expiresIn: "1h" });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 3600000,
+      });
+      return res.json({ success: true, message: "Loggin success." });
+    });
+  })(req, res, next);
+});
+
 passport.use(
   new Strategy(async function verify(username, password, cb) {
     try {
