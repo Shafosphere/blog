@@ -5,5 +5,10 @@ CREATE TABLE users(
   password VARCHAR(255) NOT NULL
 )
 CREATE TABLE articles(
+  id SERIAL PRIMARY KEY,
+  author_id INT NOT NULL UNIQUE,
+  author_username VARCHAR(100) NOT NULL UNIQUE,
+  
+
   
 )

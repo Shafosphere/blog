@@ -11,10 +11,12 @@ import passport from "passport";
 import { Strategy } from "passport-local";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import multer from 'multer';
 
 const app = express();
 const port = 8080;
 const saltRounds = 10;
+const upload = multer({ dest: 'uploads/' });
 const DATABASE = process.env.REACT_APP_DATABASE;
 const SESSION_KEY = process.env.REACT_APP_SESSION_KEY;
 const TOKEN_KEY = process.env.REACT_APP_TOKEN_KEY;
@@ -164,33 +166,13 @@ app.post(
   }
 );
 
-app.post("/article", (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.status(400).send("Bad Request");
-    }
-    req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
-      }
-      const tokendata = {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      };
-      const secret = TOKEN_KEY;
-      const token = jwt.sign(tokendata, secret, { expiresIn: "1h" });
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        maxAge: 3600000,
-      });
-      return res.json({ success: true, message: "Loggin success." });
-    });
-  })(req, res, next);
+app.post("/article", isAuthenticated, upload.single('imageFile'), (req, res) => {
+  // Jeśli middleware isAuthenticated zakończy się sukcesem,
+  console.log(req.user);
+  console.log(req.file);
+  console.log(req.body);
+  const { title, description, image, content } = req.body;
+  // Logika zapisu artykułu...
 });
 
 passport.use(
@@ -223,6 +205,21 @@ passport.use(
   })
 );
 
+function isAuthenticated(req, res, next) {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ message: "Nie jesteś zalogowany" });
+  }
+
+  jwt.verify(token, TOKEN_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Nieprawidłowy token" });
+    }
+    req.user = decoded; // Dodajemy zdekodowane dane do obiektu żądania
+    next(); // Przechodzimy do następnego middleware
+  });
+}
+
 passport.serializeUser((user, cb) => {
   cb(null, user);
 });
@@ -230,6 +227,8 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser((user, cb) => {
   cb(null, user);
 });
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

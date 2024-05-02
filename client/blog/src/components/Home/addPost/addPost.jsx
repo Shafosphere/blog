@@ -6,10 +6,10 @@ import "react-quill/dist/quill.snow.css";
 export default function AddPost() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
+  const [imageLink, setImageLink] = useState("");
+  const [imageFile, setImageFile] = useState("");
   const [content, setContent] = useState("");
 
-  // Poprawione funkcje obsługi zmian
   const handleTitleChange = (event) => {
     setTitle(event.target.value);
   };
@@ -19,24 +19,38 @@ export default function AddPost() {
   };
 
   const handleImageChange = (event) => {
-    setImage(event.target.value);
+    setImageLink(event.target.value);
   };
 
-  // const handleContentChange = (event) => {
-  //   setImage(event.target.value);
-  // };
+  const handleFileChange = (event) => {
+    if (event.target.files.length > 0) {
+      // Przechowujesz sam plik
+      setImageFile(event.target.files[0]);
+    }
+  };
 
   async function handleSubmit(event) {
     event.preventDefault();
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("content", content);
+    if (imageFile) {
+      formData.append('imageFile', imageFile);
+    } else {
+      formData.append('imageLink', imageLink);
+    }
     try {
-      const response = await axios.post("http://localhost:8080/article", {
-        title,
-        description,
-        image,
-        content,
-      }, {
-        withCredentials: true
-      });
+      const response = await axios.post(
+        "http://localhost:8080/article",
+        formData, // Używasz FormData zamiast JSON
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: true,
+        }
+      );
       if (response.data.success) {
         //new logic
       } else {
@@ -51,7 +65,7 @@ export default function AddPost() {
   return (
     <div className="container-add">
       <div className="window-add">
-      <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div>
             <label className="label-style">
               Title <span className="required-span">*</span>
@@ -88,8 +102,15 @@ export default function AddPost() {
               id="image"
               placeholder="link to the image"
               onChange={handleImageChange}
-              value={image}
+              value={imageLink}
             ></input>
+            <input
+              className="input-style"
+              type="file"
+              name="imageFile"
+              id="imageFile"
+              onChange={handleFileChange}
+            />
           </div>
           <div>
             <label className="label-style">
@@ -102,6 +123,9 @@ export default function AddPost() {
               onChange={setContent}
             />
           </div>
+          <button className="button" type="submit">
+            Log in
+          </button>
         </form>
       </div>
     </div>
