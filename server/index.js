@@ -90,6 +90,42 @@ app.get("/logout", (req, res) => {
   });
 });
 
+app.get("/data", isAuthenticated, async (req, res) => {
+  try {
+    const articleData = await db.query(`
+      SELECT 
+        a.id, a.title, a.description, a.content, a.creation_time, a.is_main,
+        u.username,
+        i.image_path
+      FROM articles a
+      LEFT JOIN users u ON a.author_id = u.id
+      LEFT JOIN images i ON a.image_id = i.id
+    `);
+
+    // Przetwórz wyniki zapytania, aby zwrócić je jako JSON
+    const articles = articleData.rows.map((article) => ({
+      id: article.id,
+      title: article.title,
+      description: article.description,
+      content: article.content,
+      creationTime: article.creation_time,
+      isMain: article.is_main,
+      author: article.username,
+      imagePath: article.image_path || null, // Ustaw null jeśli nie ma obrazu
+    }));
+    console.log(articles);
+    res.json(articles);
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Błąd serwera podczas pobierania danych.",
+      });
+  }
+});
+
 app.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) {
@@ -262,8 +298,8 @@ function isAuthenticated(req, res, next) {
     if (err) {
       return res.status(401).json({ message: "Nieprawidłowy token" });
     }
-    req.user = decoded; // Dodajemy zdekodowane dane do obiektu żądania
-    next(); // Przechodzimy do następnego middleware
+    req.user = decoded;
+    next();
   });
 }
 

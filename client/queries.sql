@@ -18,3 +18,7 @@ CREATE TABLE images(
   image_path TEXT,
   is_local BOOLEAN NOT NULL 
 )
+ALTER TABLE articles
+ADD COLUMN is_main BOOLEAN DEFAULT FALSE;
+
+CREATE UNIQUE INDEX idx_is_main_true ON articles(is_main) WHERE is_main IS TRUE;
