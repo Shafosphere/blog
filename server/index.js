@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: './.env.local' });
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env.local" });
 import express from "express";
 import bodyParser from "body-parser";
 import { body, validationResult } from "express-validator";
@@ -11,12 +11,12 @@ import passport from "passport";
 import { Strategy } from "passport-local";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-import multer from 'multer';
+import multer from "multer";
 
 const app = express();
 const port = 8080;
 const saltRounds = 10;
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: "uploads/" });
 const DATABASE = process.env.REACT_APP_DATABASE;
 const SESSION_KEY = process.env.REACT_APP_SESSION_KEY;
 const TOKEN_KEY = process.env.REACT_APP_TOKEN_KEY;
@@ -79,12 +79,14 @@ app.get("/is-authenticated", (req, res) => {
   });
 });
 
-app.get('/logout', (req, res) => {
+app.get("/logout", (req, res) => {
   req.logout(function (err) {
-    if (err) { return next(err); }
-    res.clearCookie('connect.sid');
-    res.clearCookie('token');
-    res.json({ success: true, message: 'Wylogowano pomyślnie.' });
+    if (err) {
+      return next(err);
+    }
+    res.clearCookie("connect.sid");
+    res.clearCookie("token");
+    res.json({ success: true, message: "Wylogowano pomyślnie." });
   });
 });
 
@@ -166,14 +168,59 @@ app.post(
   }
 );
 
-app.post("/article", isAuthenticated, upload.single('imageFile'), (req, res) => {
-  // Jeśli middleware isAuthenticated zakończy się sukcesem,
-  console.log(req.user);
-  console.log(req.file);
-  console.log(req.body);
-  const { title, description, image, content } = req.body;
-  // Logika zapisu artykułu...
-});
+app.post(
+  "/article",
+  isAuthenticated,
+  upload.single("imageFile"),
+  async (req, res) => {
+    const { id, username } = req.user;
+    const { title, description, content, imageLink } = req.body;
+
+    let image_path;
+    let is_local = false;
+    let image_id = null;
+    if (req.file) {
+      image_path = req.file.path;
+      is_local = true;
+    } else if (imageLink) {
+      image_path = imageLink;
+    }
+
+    if (image_path) {
+      try {
+        const result = await db.query(
+          "INSERT INTO images (image_path, is_local) VALUES ($1, $2) RETURNING id",
+          [image_path, is_local]
+        );
+        image_id = result.rows[0].id;
+      } catch (err) {
+        return res
+          .status(500)
+          .json({ success: false, message: "Błąd podczas dodawania obrazu." });
+      }
+    }
+
+    try {
+      const checkResult = await db.query(
+        "SELECT id FROM users WHERE id = $1 AND username = $2",
+        [id, username]
+      );
+      if (checkResult.rows.length > 0) {
+        const insertArticle = await db.query(
+          "INSERT INTO articles (author_id, title, description, content, image_id) VALUES ($1, $2 , $3, $4, $5) RETURNING id",
+          [id, title, description, content, image_id]
+        );
+        return res.json({ success: true, articleId: insertArticle.rows[0].id });
+      } else {
+        return res
+          .status(404)
+          .json({ success: false, message: "Autor nie znaleziony." });
+      }
+    } catch (err) {
+      return res.status(500).json({ success: false, message: "Błąd serwera." });
+    }
+  }
+);
 
 passport.use(
   new Strategy(async function verify(username, password, cb) {
@@ -227,8 +274,6 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser((user, cb) => {
   cb(null, user);
 });
-
-
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

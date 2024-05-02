@@ -37,7 +37,8 @@ export default function AddPost() {
     formData.append("content", content);
     if (imageFile) {
       formData.append('imageFile', imageFile);
-    } else {
+    } 
+    else if (imageLink) {
       formData.append('imageLink', imageLink);
     }
     try {
@@ -57,8 +58,7 @@ export default function AddPost() {
         alert(response.data.message);
       }
     } catch (error) {
-      console.error("Registration error", error);
-      alert("An error occurred during registration");
+      console.error("Got an error while adding your post", error);
     }
   }
 
