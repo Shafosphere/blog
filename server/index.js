@@ -16,7 +16,7 @@ import multer from "multer";
 const app = express();
 const port = 8080;
 const saltRounds = 10;
-const upload = multer({ dest: "uploads/" });
+
 const DATABASE = process.env.REACT_APP_DATABASE;
 const SESSION_KEY = process.env.REACT_APP_SESSION_KEY;
 const TOKEN_KEY = process.env.REACT_APP_TOKEN_KEY;
@@ -31,9 +31,25 @@ app.use(
     },
   })
 );
+app.use('/public', express.static('public'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    // Zapisz pliki w folderze 'uploads'
+    cb(null, 'public/images');
+  },
+  filename: function(req, file, cb) {
+    // Nazwij plik unikalną nazwą, aby uniknąć nadpisania
+    const uniqueSuffix = Date.now() + '-' + file.originalname;
+    cb(null, file.fieldname + '-' + uniqueSuffix);
+  }
+});
+const upload = multer({ storage: storage });
+
+app.use('/uploads', express.static('uploads'));
 
 const db = new pg.Client({
   user: "postgres",
@@ -96,24 +112,30 @@ app.get("/data", isAuthenticated, async (req, res) => {
       SELECT 
         a.id, a.title, a.description, a.content, a.creation_time, a.is_main,
         u.username,
-        i.image_path
+        i.image_path,
+        i.is_local
       FROM articles a
       LEFT JOIN users u ON a.author_id = u.id
       LEFT JOIN images i ON a.image_id = i.id
     `);
 
-    // Przetwórz wyniki zapytania, aby zwrócić je jako JSON
-    const articles = articleData.rows.map((article) => ({
-      id: article.id,
-      title: article.title,
-      description: article.description,
-      content: article.content,
-      creationTime: article.creation_time,
-      isMain: article.is_main,
-      author: article.username,
-      imagePath: article.image_path || null, // Ustaw null jeśli nie ma obrazu
-    }));
-    console.log(articles);
+    
+    const articles = articleData.rows.map((article) => {
+      let imagePath = article.image_path;
+      if (article.is_local) {
+        imagePath = `http://localhost:8080/${imagePath}`;
+      }
+      return {
+        id: article.id,
+        title: article.title,
+        description: article.description,
+        content: article.content,
+        creationTime: article.creation_time,
+        isMain: article.is_main,
+        author: article.username,
+        imagePath: imagePath || null,
+      };
+    });
     res.json(articles);
   } catch (err) {
     console.error(err);
@@ -229,6 +251,7 @@ app.post(
           [image_path, is_local]
         );
         image_id = result.rows[0].id;
+        console.log('added image')
       } catch (err) {
         return res
           .status(500)
@@ -246,6 +269,7 @@ app.post(
           "INSERT INTO articles (author_id, title, description, content, image_id) VALUES ($1, $2 , $3, $4, $5) RETURNING id",
           [id, title, description, content, image_id]
         );
+        console.log('added article')
         return res.json({ success: true, articleId: insertArticle.rows[0].id });
       } else {
         return res

@@ -34,8 +34,17 @@
   font-size: 20px;
   font-weight: 600;
 }
+.card-description{
+ font-size: 15px;
+ color: #A7a7a7;
+ padding: 1rem 2rem 1rem 0.25rem;
+ text-align: justify;
+}
 .card-author{
   font-size: 12px;
   color: #A7a7a7;
   text-transform: uppercase;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }

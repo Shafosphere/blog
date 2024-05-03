@@ -1,19 +1,25 @@
 import "./smallCard.css";
-export default function SmallCard() {
+export default function SmallCard({smallArticles, dateFormat}) {
   return (
     <div className="container-smallCard">
       <div className="window-smallCard card">
         <div className="top-smallCard">
           <img
             alt="banner"
-            src="https://images.pexels.com/photos/1105766/pexels-photo-1105766.jpeg"
+            src={smallArticles.imagePath}
           />
         </div>
         <div className="bot-smallCard">
           <div className="card-title">
-            International Artist Feature: Malaysia
+          {smallArticles.title}
+          <div className="card-description">
+            {smallArticles.description}
           </div>
-          <div className="card-author">Maciek z Bogdanca</div>
+          </div>
+          <div className="card-author">
+            <span>{smallArticles.author}</span>
+            <span>{dateFormat(smallArticles.creationTime)}</span>
+          </div>
         </div>
       </div>
     </div>
