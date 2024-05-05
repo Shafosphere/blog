@@ -26,7 +26,6 @@
 .card {
   height: 30rem;
   background-color: white;
-
   border-bottom: solid 2px rgba(0, 0, 0, 0.1);
   border-right: solid 2px rgba(0, 0, 0, 0.1);
 }
@@ -47,4 +46,14 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+@media (max-width: 57rem) {
+  .window-home {
+    width: 25rem; 
+  }
+  .container-home {
+    padding: 10rem 0rem 0rem 0rem;
+    display: flex;
+    justify-content: center;
+  }
 }

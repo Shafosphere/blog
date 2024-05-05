@@ -20,3 +20,15 @@
     flex-direction: column;
     justify-content: space-between;
 }
+@media (max-width: 67rem) {
+    .window-smallCard {
+      width: 15rem; /* Zmniejsz szerokość diva do 50% */
+      /* Możesz dodać więcej stylów, które mają być zastosowane poniżej 600px */
+    }
+  }
+  @media (max-width: 57rem) {
+    .window-smallCard {
+      width: 20rem; /* Zmniejsz szerokość diva do 50% */
+      /* Możesz dodać więcej stylów, które mają być zastosowane poniżej 600px */
+    }
+  }
