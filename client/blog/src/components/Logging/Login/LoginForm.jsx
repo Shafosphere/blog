@@ -1,10 +1,11 @@
-import "./loginForm.css";
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 export default function LoginForm({ setIsAuthenticated }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
   async function handleSubmit(event) {
@@ -19,12 +20,9 @@ export default function LoginForm({ setIsAuthenticated }) {
       if (response.data.success) {
         setIsAuthenticated(true);
         navigate("/main");
-      } else {
-        console.log("not user like this");
-        console.log(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      setError(error.response.data.message || "An unexpected error occurred");
     }
   }
   return (
@@ -56,6 +54,7 @@ export default function LoginForm({ setIsAuthenticated }) {
               required
             />
           </div>
+          {error && <p className="login-error">{error}</p>}
         </div>
         <button className="button" type="submit">
           Log in

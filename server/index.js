@@ -154,7 +154,7 @@ app.post("/login", (req, res, next) => {
       return next(err);
     }
     if (!user) {
-      return res.status(400).send("Bad Request");
+      return res.status(400).json({ success: false, message: info.message });
     }
     req.logIn(user, (err) => {
       if (err) {
@@ -294,17 +294,17 @@ passport.use(
 
         bcrypt.compare(password, storedHash, (err, result) => {
           if (err) {
-            return cb("Error comparing passwords: ", err);
+            return cb(null, false, { message: "Error compare" });
           } else {
             if (result) {
               return cb(null, user);
             } else {
-              return cb(null, false);
+              return cb(null, false, { message: "Invalid password" });
             }
           }
         });
       } else {
-        return cb("User not found");
+        return cb(null, false, { message: 'User not found' });
       }
     } catch (err) {
       return err;

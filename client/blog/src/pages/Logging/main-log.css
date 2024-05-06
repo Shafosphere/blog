@@ -77,6 +77,14 @@
   -ms-transform: scale(1.02);
   -o-transform: scale(1.02);
 }
+.login-error{
+  width: 100%;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(255, 0, 0, 0.692);
+}
 .container-input {
   display: flex;
   flex-direction: column;
