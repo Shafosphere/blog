@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Main from "./main";
+import Article from "./Article/Article";
 import "./index.css";
 import Logging from "./Logging/main-log";
-import ErrorPage from "../error-page";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,7 +18,7 @@ function App() {
           { withCredentials: true }
         );
         setIsAuthenticated(response.data.authenticated);
-        if(setIsAuthenticated){
+        if (setIsAuthenticated) {
           navigate("/main");
         }
         console.log("??? + " + response.data.authenticated);
@@ -44,12 +39,15 @@ function App() {
       />
 
       {/* Protected Route */}
-      <Route
-        path="/main"
-        element={isAuthenticated ? <Main /> : <Navigate to="/login" replace />}
-      />
+        <Route
+          path="/main"
+          element={isAuthenticated ? <Main /> : <Navigate to="/login" replace />}
+        />
 
-      <Route path="*" element={<ErrorPage />} />
+        <Route
+          path="/article/:id"
+          element={isAuthenticated ? <Article /> : <Navigate to="/login" replace />}
+        />
     </Routes>
   );
 }

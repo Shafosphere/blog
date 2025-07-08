@@ -17,13 +17,11 @@ const app = express();
 const port = 8080;
 const saltRounds = 10;
 
-const DATABASE = process.env.REACT_APP_DATABASE;
-const SESSION_KEY = process.env.REACT_APP_SESSION_KEY;
-const TOKEN_KEY = process.env.REACT_APP_TOKEN_KEY;
+const TOKEN_KEY = process.env.TOKEN_KEY;
 
 app.use(
   session({
-    secret: SESSION_KEY,
+    secret: process.env.SESSION_KEY,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -31,32 +29,32 @@ app.use(
     },
   })
 );
-app.use('/public', express.static('public'));
+app.use("/public", express.static("public"));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
+  destination: function (req, file, cb) {
     // Zapisz pliki w folderze 'uploads'
-    cb(null, 'public/images');
+    cb(null, "public/images");
   },
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     // Nazwij plik unikalną nazwą, aby uniknąć nadpisania
-    const uniqueSuffix = Date.now() + '-' + file.originalname;
-    cb(null, file.fieldname + '-' + uniqueSuffix);
-  }
+    const uniqueSuffix = Date.now() + "-" + file.originalname;
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
 });
 const upload = multer({ storage: storage });
 
-app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static("uploads"));
 
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "blog",
-  password: DATABASE,
-  port: 5433,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 db.connect();
 
@@ -119,7 +117,6 @@ app.get("/data", isAuthenticated, async (req, res) => {
       LEFT JOIN images i ON a.image_id = i.id
     `);
 
-    
     const articles = articleData.rows.map((article) => {
       let imagePath = article.image_path;
       if (article.is_local) {
@@ -139,11 +136,83 @@ app.get("/data", isAuthenticated, async (req, res) => {
     res.json(articles);
   } catch (err) {
     console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Błąd serwera podczas pobierania danych.",
+    });
+  }
+});
+
+app.get("/article/:id", isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query(
+      `SELECT
+        a.id, a.title, a.description, a.content, a.creation_time, a.is_main,
+        u.username,
+        i.image_path,
+        i.is_local
+      FROM articles a
+      LEFT JOIN users u ON a.author_id = u.id
+      LEFT JOIN images i ON a.image_id = i.id
+      WHERE a.id = $1`,
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Article not found." });
+    }
+    const article = result.rows[0];
+    let imagePath = article.image_path;
+    if (article.is_local) {
+      imagePath = `http://localhost:8080/${imagePath}`;
+    }
+    res.json({
+      id: article.id,
+      title: article.title,
+      description: article.description,
+      content: article.content,
+      creationTime: article.creation_time,
+      isMain: article.is_main,
+      author: article.username,
+      imagePath: imagePath || null,
+    });
+  } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({
         success: false,
-        message: "Błąd serwera podczas pobierania danych.",
+        message: "Błąd serwera podczas pobierania artykułu.",
+      });
+  }
+});
+
+app.patch("/article/:id/set-main", isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query("BEGIN");
+    await db.query("UPDATE articles SET is_main = false WHERE is_main = true");
+    const result = await db.query(
+      "UPDATE articles SET is_main = true WHERE id = $1 RETURNING id",
+      [id]
+    );
+    await db.query("COMMIT");
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Article not found." });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    await db.query("ROLLBACK");
+    console.error(err);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Błąd serwera podczas ustawiania artykułu głównego.",
       });
   }
 });
@@ -251,7 +320,7 @@ app.post(
           [image_path, is_local]
         );
         image_id = result.rows[0].id;
-        console.log('added image')
+        console.log("added image");
       } catch (err) {
         return res
           .status(500)
@@ -269,7 +338,7 @@ app.post(
           "INSERT INTO articles (author_id, title, description, content, image_id) VALUES ($1, $2 , $3, $4, $5) RETURNING id",
           [id, title, description, content, image_id]
         );
-        console.log('added article')
+        console.log("added article");
         return res.json({ success: true, articleId: insertArticle.rows[0].id });
       } else {
         return res
@@ -304,7 +373,7 @@ passport.use(
           }
         });
       } else {
-        return cb(null, false, { message: 'User not found' });
+        return cb(null, false, { message: "User not found" });
       }
     } catch (err) {
       return err;

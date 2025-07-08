@@ -36,10 +36,9 @@ export default function AddPost() {
     formData.append("description", description);
     formData.append("content", content);
     if (imageFile) {
-      formData.append('imageFile', imageFile);
-    } 
-    else if (imageLink) {
-      formData.append('imageLink', imageLink);
+      formData.append("imageFile", imageFile);
+    } else if (imageLink) {
+      formData.append("imageLink", imageLink);
     }
     try {
       const response = await axios.post(
@@ -47,13 +46,13 @@ export default function AddPost() {
         formData, // Używasz FormData zamiast JSON
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
         }
       );
       if (response.data.success) {
-        //new logic
+        alert("Your post has been added successfully!");
       } else {
         alert(response.data.message);
       }
@@ -124,7 +123,7 @@ export default function AddPost() {
             />
           </div>
           <button className="button" type="submit">
-            Log in
+            Add Post
           </button>
         </form>
       </div>

@@ -2,6 +2,7 @@
   height: 7rem;
   width: 100%;
   position: fixed;
+  z-index: 1000;
 }
 .window-navbar {
   background-color: #123c49;

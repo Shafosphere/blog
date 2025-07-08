@@ -6,13 +6,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function Home({ display }) {
-  const [articles, setArticles] = useState()
+  const [articles, setArticles] = useState();
   useEffect(() => {
-    async function getArticles(){
-      const response = await axios.get(
-        "http://localhost:8080/data",
-        { withCredentials: true }
-      );
+    async function getArticles() {
+      const response = await axios.get("http://localhost:8080/data", {
+        withCredentials: true,
+      });
       setArticles(response.data);
     }
     getArticles();
@@ -29,25 +28,29 @@ export default function Home({ display }) {
       second: "2-digit",
     });
     return readableDate;
-  };
-
-  function bigCard(){
-    const mainArticle = articles.find((article) => article.isMain);
-    return (
-      <BigCard mainArticle={mainArticle}/>
-    )
   }
 
-  function smallCard(){
+  function bigCard() {
+    const mainArticle = articles.find((article) => article.isMain);
+    return mainArticle ? <BigCard mainArticle={mainArticle} /> : null;
+  }
+
+  function smallCard() {
     const smallArticles = articles.filter((article) => !article.isMain);
-    console.log('smallArticles: ' + smallArticles);
+    console.log("smallArticles: " + smallArticles);
     return (
       <>
-        {smallArticles.map((item)=>{
-          return <SmallCard key={item.id} smallArticles={item} dateFormat={dateFormat} />;
+        {smallArticles.map((item) => {
+          return (
+            <SmallCard
+              key={item.id}
+              smallArticles={item}
+              dateFormat={dateFormat}
+            />
+          );
         })}
       </>
-    )
+    );
   }
 
   function WindowHome() {
@@ -60,12 +63,11 @@ export default function Home({ display }) {
         </div>
       </div>
     );
-
   }
 
   return (
     <div className="container-home">
-      {display ? <AddPost/> : <WindowHome/>}
+      {display ? <AddPost /> : <WindowHome />}
     </div>
   );
 }
