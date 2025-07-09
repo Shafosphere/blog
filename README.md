@@ -17,6 +17,20 @@
 
 This repository contains a minimal blog application built as a coding exercise. The project demonstrates a simple React frontend paired with a Node + Express backend. It allows users to register, log in and add articles with optional images.
 
+![mainpage.gif](./gifs/mainpage.gif)
+*home page*
+
+![login](./gifs/login.gif)
+*login*
+
+![addpost](./gifs/addpost1.gif)
+*adding a post to your blog*
+
+![addpost](./gifs/addpost2.gif)
+
+![setasmain](./gifs/main.gif)
+*setting as main post*
+
 # 2. Tech Stack
 
 | Layer         | Technology        | Key Libraries                     |
